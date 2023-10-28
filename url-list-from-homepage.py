@@ -6,8 +6,8 @@ def sanitize_filename(filename):
 
 # Get user input
 homepage_url = input("Enter the homepage URL: ")
-incl_str = input("Enter the string to include (optional): ")
-excl_strs_input = input("Enter strings to exclude, separated by commas (optional): ")
+incl_str = input("Enter the string to include (optional): ").lower()  # Convert to lowercase
+excl_strs_input = input("Enter strings to exclude, separated by commas (optional): ").lower()  # Convert to lowercase
 
 # Parse exclusion strings
 excl_strs = excl_strs_input.split(",") if excl_strs_input else []
@@ -25,17 +25,17 @@ try:
 
     for page in tree.all_pages():
         total_urls += 1
-        url = page.url
+        url = page.url.lower()  # Convert to lowercase for case-insensitive comparison
 
         if any(excl_str in url for excl_str in excl_strs):
             excluded_urls += 1
             continue
         
         if incl_str and incl_str in url:
-            filtered_urls.append(url)
+            filtered_urls.append(page.url)  # Use original case for output
             included_urls += 1
         elif not incl_str:
-            filtered_urls.append(url)
+            filtered_urls.append(page.url)  # Use original case for output
             included_urls += 1
 
     # Create filename
