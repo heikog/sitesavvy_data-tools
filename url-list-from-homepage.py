@@ -7,7 +7,10 @@ def sanitize_filename(filename):
 # Get user input
 homepage_url = input("Enter the homepage URL: ")
 incl_str = input("Enter the string to include (optional): ")
-excl_str = input("Enter the string to exclude (optional): ")
+excl_strs_input = input("Enter strings to exclude, separated by commas (optional): ")
+
+# Parse exclusion strings
+excl_strs = excl_strs_input.split(",") if excl_strs_input else []
 
 # Initialize counters
 total_urls = 0
@@ -20,29 +23,18 @@ try:
     tree = sitemap_tree_for_homepage(homepage_url)
     filtered_urls = []
 
-    # Loop through all pages in the sitemap
     for page in tree.all_pages():
         total_urls += 1
         url = page.url
-        if incl_str and excl_str:
-            if incl_str in url and excl_str not in url:
-                filtered_urls.append(url)
-                included_urls += 1
-            else:
-                excluded_urls += 1
-        elif incl_str:
-            if incl_str in url:
-                filtered_urls.append(url)
-                included_urls += 1
-            else:
-                excluded_urls += 1
-        elif excl_str:
-            if excl_str not in url:
-                filtered_urls.append(url)
-                included_urls += 1
-            else:
-                excluded_urls += 1
-        else:
+
+        if any(excl_str in url for excl_str in excl_strs):
+            excluded_urls += 1
+            continue
+        
+        if incl_str and incl_str in url:
+            filtered_urls.append(url)
+            included_urls += 1
+        elif not incl_str:
             filtered_urls.append(url)
             included_urls += 1
 
@@ -50,8 +42,8 @@ try:
     filename_parts = [sanitize_filename(homepage_url)]
     if incl_str:
         filename_parts.append(f"_incl-{sanitize_filename(incl_str)}")
-    if excl_str:
-        filename_parts.append(f"_excl-{sanitize_filename(excl_str)}")
+    if excl_strs:
+        filename_parts.append(f"_excl-{sanitize_filename('-'.join(excl_strs))}")
     filename = ''.join(filename_parts) + '.txt'
 
     # Write to file
@@ -71,4 +63,3 @@ try:
 except Exception as e:
     errors += 1
     print(f"An error occurred: {e}")
-
